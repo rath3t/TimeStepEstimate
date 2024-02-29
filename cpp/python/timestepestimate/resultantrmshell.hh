@@ -32,6 +32,12 @@ namespace Ikarus {
 template<typename ResultantBasedShell>
 struct StressBasedShellRM;
 
+struct RMSettings {
+  double thickness;
+  double Emodul;
+  double nu;
+};
+
   template <typename Basis_, bool useEigenRef_ = false>
   class NonLinearRMshell {
    public:
@@ -97,11 +103,11 @@ struct StressBasedShellRM;
     mutable MembraneStrain membraneStrain;
     mutable TransverseShearStrain transverseShearStrain;
     NonLinearRMshell(const Basis &globalBasis, const typename LocalViewBlocked::Element &element,
-                    const MultiTypeVector &p_x0,
-                     const double kappa_ = 1.0)
+                    const MultiTypeVector &p_x0,const RMSettings& settings,
+                     const double kappa = 1.0)
         : localViewFlat_{globalBasis.flat().localView()},
           localViewBlocked_{globalBasis.untouched().localView()},
-          x0{p_x0}
+          x0{p_x0}, settings_{settings}, kappa_{kappa_}
          {
 
       localViewFlat_.bind(element);
@@ -534,7 +540,7 @@ struct StressBasedShellRM;
         DirVariantRef directorReferenceFunction(directorReferenceFunctionImpl);
         return std::make_tuple( displacementFunction, directorFunction,
                                directorReferenceFunction);
-      } else if (directorFunctionType=="PBFE") {
+      } else {
         Dune::ProjectionBasedLocalFunction2 directorFunctionImpl(localBasisDirector, localDirectorConfiguration, geo_, _1);
         Dune::ProjectionBasedLocalFunction2 directorReferenceFunctionImpl(localBasisDirector, localRefDirectorConfiguration,
                                                                           geo_, _1);
@@ -555,29 +561,7 @@ struct StressBasedShellRM;
         DirVariantRef directorReferenceFunction(directorReferenceFunctionImpl);
         return std::make_tuple( displacementFunction, directorFunction,
                                directorReferenceFunction);
-      } else if (directorFunctionType=="GFE") {
-        // Dune::GeodesicLocalFunction directorFunctionImpl(localBasisDirector, localDirectorConfiguration, geo_, _1);
-        // Dune::GeodesicLocalFunction directorReferenceFunctionImpl(localBasisDirector, localRefDirectorConfiguration,
-        //                                                                   geo_, _1);
-        // using DirectorCurType= decltype(directorFunctionImpl);
-        // using DuneBasis = typename  DirectorCurType::DuneBasis;
-        // using CoeffContainer = typename  DirectorCurType::CoeffContainer;
-        // using GeometryL = typename  DirectorCurType::Geometry;
-        // static constexpr int orderID = DirectorCurType::id[0];
-        // using DirVariantCur = DirectorFunctionVar<DuneBasis, CoeffContainer,GeometryL,orderID>;
-        // DirVariantCur directorFunction(directorFunctionImpl);
-
-        // using DirectorRefType= decltype(directorReferenceFunctionImpl);
-        // using DuneBasisRef = typename  DirectorRefType::DuneBasis;
-        // using CoeffContainerRef = typename  DirectorRefType::CoeffContainer;
-        // using GeometryLRef = typename  DirectorRefType::Geometry;
-        // static constexpr int orderIDRef = DirectorRefType::id[0];
-        // using DirVariantRef = DirectorFunctionVar<DuneBasisRef, CoeffContainerRef,GeometryLRef,orderIDRef>;
-        // DirVariantRef directorReferenceFunction(directorReferenceFunctionImpl);
-        // return std::make_tuple( displacementFunction, directorFunction,
-        //                        directorReferenceFunction);
-
-      }
+      } 
     }
 
     inline void calculateMatrix(const FERequirementType &par, typename Traits::MatrixType K) const {
@@ -604,6 +588,7 @@ struct StressBasedShellRM;
 
       Eigen::Matrix<ScalarType, 8, 3> bopMidSurfaceJ;
       Eigen::Matrix<ScalarType, 8, 2> bopDirectorJ;
+         const auto& thickness_ = settings_.thickness;
 
       const int midSurfaceDofs = numNodeMidSurface * midSurfaceDim;
       for (const auto &[gpIndex, gp] : displacementFunction.viewOverIntegrationPoints()) {
@@ -734,6 +719,7 @@ struct StressBasedShellRM;
       Eigen::Matrix<ScalarType, 8, 3> bopMidSurface;
       Eigen::Matrix<ScalarType, 8, 2> bopDirector;
       const int midSurfaceDofs = numNodeMidSurface * midSurfaceDim;
+      const auto& thickness_ = settings_.thickness;
 
       for (const auto &[gpIndex, gp] : displacementFunction.viewOverIntegrationPoints()) {
         const auto weight = geo_->integrationElement(gp.position()) * gp.weight();
@@ -854,6 +840,7 @@ struct StressBasedShellRM;
           = createFunctions(par,dx);
 
       KinematicVariables<ScalarType> kin{};
+         const auto& thickness_ = settings_.thickness;
 
 
       const int midSurfaceDofs = numNodeMidSurface * midSurfaceDim;
@@ -914,8 +901,8 @@ struct StressBasedShellRM;
     }
 
     auto materialTangent(const Eigen::Matrix<double, 3, 3> &Aconv) const {
-      const auto emod_ = 1000.0;//  fESettings.request<double>("youngs_modulus");
-      const auto nu_ = 0.3; //fESettings.request<double>("poissons_ratio");
+      const auto emod_ = settings_.Emodul;
+      const auto nu_ =settings_.nu;
       const double lambda = emod_*nu_/((1.0 + nu_)*(1.0 - 2.0*nu_));
       const double mu = emod_/(2.0*(1.0 + nu_));
       const double lambdbar = 2.0*lambda*mu/(lambda + 2.0*mu);
@@ -949,7 +936,8 @@ struct StressBasedShellRM;
     std::shared_ptr<const Geometry> geo_;
 
     YoungsModulusAndPoissonsRatio material;
-    double thickness_;
+RMSettings settings_;
+double kappa_;
     mutable Eigen::Matrix<double, 8, 8> CMat_;
     friend StressBasedShellRM<NonLinearRMshell>;
     size_t numNodeMidSurface{};
@@ -957,6 +945,7 @@ struct StressBasedShellRM;
 
     const LocalViewFlat& localView() const { return localViewFlat_; }
     LocalViewFlat& localView() { return localViewFlat_; }
+
   };
 
 }  // namespace Ikarus

@@ -23,6 +23,10 @@ referenceMidSurface= numpy.ndarray(shape=(3,4))
 referenceDirectors= numpy.ndarray(shape=(3,4))
 displacements= numpy.ndarray(shape=(3,4))
 directors= numpy.ndarray(shape=(3,4))
+feSettings = {
+  "thickness": 0.1,
+  "youngsModulus": 1000,
+  "nu": 0.3
+}
 
-
-timestepestimate.computeStiffnessMatrix(referenceMidSurface,referenceDirectors,displacements,directors)
+print(timestepestimate.computeStiffnessMatrix(feSettings,referenceMidSurface,referenceDirectors,displacements,directors))

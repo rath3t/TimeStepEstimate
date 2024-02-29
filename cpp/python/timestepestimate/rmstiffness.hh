@@ -85,7 +85,7 @@ namespace Ikarus {
 //      numberOfNodes = ResultantBasedShell::getNumberOfNodes();
 //      membraneStrain = ResultantBasedShell::getMembraneStrain();
 //      std::cout<<"Constructor: "<<rule.size()<<std::endl;
-      secondOrderBending = this->fESettings.template request<bool>("secondOrderBending");
+      secondOrderBending = true;
 
     }
 
@@ -360,7 +360,7 @@ namespace Ikarus {
       KinematicVariables<ScalarType> kin{};
 
 
-      const auto &thickness_ = this->fESettings.template request<double>("thickness");
+      const auto &thickness_ = this->settings_.thickness;
       Eigen::Matrix<ScalarType, 5, 3> bopMidSurfaceI;
       Eigen::Matrix<ScalarType, 5, 2> bopDirectorI;
       Eigen::Matrix<ScalarType, 5, 3> bopMidSurfaceJ;
@@ -814,7 +814,7 @@ namespace Ikarus {
       energy.setZero();
       this->membraneStrain.pre(geo,displacementFunction);
 
-      const auto &thickness_ = this->fESettings.template request<double>("thickness");
+      const auto &thickness_ = this->settings_.thickness;
       KinematicVariables<double> kin{};
 //      for (auto& gP : oneDRule)
 //      {
