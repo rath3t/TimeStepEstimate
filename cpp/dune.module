@@ -1,0 +1,13 @@
+################################
+# Dune module information file #
+################################
+
+# Name of the module
+Module: timeStepEstimate
+Version: 0.1
+Maintainer: schilling@ibb.uni-stuttgart.de
+# Required build dependencies
+Depends: ikarus dune-common dune-localfefunctions
+Python-Requires: numpy scipy dune-common mpi4py
+# Optional build dependencies
+#Suggests:

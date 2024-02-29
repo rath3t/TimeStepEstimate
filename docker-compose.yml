@@ -1,0 +1,19 @@
+#SPDX-FileCopyrightText: SPDX-FileCopyrightText: 2021-2024 The Ikarus Developers mueller@ibb.uni-stuttgart.de
+#SPDX-License-Identifier: LGPL-3.0-or-later
+
+version: "3.3"
+services:
+  OpenIkarusContainer:
+    image: ikarusproject/ikarus:v0.4
+    entrypoint: /bin/bash
+    tty: true
+    volumes: 
+      - .:/workspaces/TimeStepEstimate
+    working_dir: /workspaces/TimeStepEstimate
+  OpenIkarusContainer-clang:
+    image: ikarusproject/ikarus-clang:v0.4
+    entrypoint: /bin/bash
+    tty: true
+    volumes: 
+      - .:/workspaces/TimeStepEstimate
+    working_dir: /workspaces/TimeStepEstimate
