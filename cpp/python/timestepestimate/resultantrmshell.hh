@@ -95,7 +95,7 @@ struct RMSettings {
     using LocalViewFlat          = typename Basis::FlatBasis::LocalView;
     using Geometry               = typename LocalViewFlat::Element::Geometry;
     using GridView          = typename Basis::FlatBasis::GridView;
-    using Traits = FETraits<typename LocalViewFlat::Element>;
+    using Traits = FETraits<typename LocalViewFlat::Element,useEigenRef_>;
     static constexpr int useEigenRef = useEigenRef_;
 
     static constexpr int myDim = Traits::mydim;

@@ -117,7 +117,7 @@ namespace Ikarus {
     const Geometry& geo;
     using GridView = typename FlatBasis::GridView;
     static constexpr int useEigenRef = ResultantBasedShell::useEigenRef;
-    using Traits = FETraits<Element>;
+    using Traits = FETraits<Element,useEigenRef>;
    protected:
     static constexpr int myDim = Traits::mydim;
     static constexpr int worlddim = Traits::worlddim;
@@ -348,7 +348,7 @@ namespace Ikarus {
     template<typename ScalarType>
     void calculateMatrixImpl(const FERequirementType &par, typename Traits::MatrixType K,
                              const std::optional<const Eigen::VectorX<ScalarType>> &dx = std::nullopt) const {
-      K.setZero();
+    
       using namespace Dune::DerivativeDirections;
       using namespace Dune;
       const auto [ displacementFunction, directorFunction,
@@ -359,7 +359,7 @@ namespace Ikarus {
       const int midSurfaceDofs = this->numNodeMidSurface * midSurfaceDim;
       KinematicVariables<ScalarType> kin{};
 
-
+std::cout<<"Step1"<<std::endl;
       const auto &thickness_ = this->settings_.thickness;
       Eigen::Matrix<ScalarType, 5, 3> bopMidSurfaceI;
       Eigen::Matrix<ScalarType, 5, 2> bopDirectorI;

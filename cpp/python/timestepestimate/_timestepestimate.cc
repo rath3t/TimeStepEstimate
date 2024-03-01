@@ -65,7 +65,10 @@ PYBIND11_MODULE(_timestepestimate, m) {
 
 
    m.def("computeStiffnessMatrix", [](py::dict settings,const Eigen::Ref<Eigen::Matrix3Xd>& referenceMidSurface,const Eigen::Ref<Eigen::Matrix3Xd>& referenceDirectors, const Eigen::Ref<Eigen::Matrix3Xd>& displacements, Eigen::Ref<Eigen::Matrix3Xd>& directors) {
-
+std::cout<<referenceMidSurface<<std::endl;
+std::cout<<referenceDirectors<<std::endl;
+std::cout<<displacements<<std::endl;
+std::cout<<directors<<std::endl;
          using Grid = Dune::ALUGrid<2, 3, Dune::cube, Dune::nonconforming>;
         using namespace Dune::Functions::BasisFactory;
 
@@ -124,12 +127,14 @@ auto scalaarDirectorBasis = lagrange<1>();
   const MultiTypeVector x0(displacementsBlockedRef, dBlockedRef);
    MultiTypeVector x(displacementsBlocked, dBlocked);
 
-using FE = Ikarus::StressBasedShellRM<Ikarus::NonLinearRMshell<Basis>>;
+using FE = Ikarus::StressBasedShellRM<Ikarus::NonLinearRMshell<Basis,true>>;
 
 RMSettings rmSettings;
 rmSettings.thickness = settings["thickness"].cast<double>();
 rmSettings.Emodul = settings["youngsModulus"].cast<double>();
 rmSettings.nu = settings["nu"].cast<double>();
+std::cout<<"x0"<<x0<<std::endl;
+std::cout<<"x"<<x<<std::endl;
 
 double load =0.0;
 auto fe = FE(basis,*gridView.begin<0>(),x0,rmSettings);
@@ -141,6 +146,7 @@ auto fe = FE(basis,*gridView.begin<0>(),x0,rmSettings);
         Eigen::MatrixXd stiffnessMatrix;
         stiffnessMatrix.setZero(fe.size(),fe.size());
 fe.calculateMatrix(req,stiffnessMatrix);
+std::cout<<stiffnessMatrix<<std::endl;
      return stiffnessMatrix;
      });
 
